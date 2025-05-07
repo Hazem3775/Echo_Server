@@ -1,0 +1,40 @@
+import socket
+
+Host = '127.0.0.1'
+Port = 65432
+
+def process_message(message):
+    message = message.strip()  # Remove newline or spaces
+
+    if not message:
+        return ""
+    command = message[0]
+    content = message[1:]
+
+    if command == 'A':
+        return ''.join(sorted(content, reverse=True))
+    elif command == 'C':
+        return ''.join(sorted(content))
+    elif command == 'D':
+        return content.upper()
+    else:
+        return message
+
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.bind((Host, Port))
+s.listen(1)
+print(f"Server is listening on {Host}:{Port}...")
+
+conn, addr = s.accept()
+print(f"Connection from: {addr}")
+
+while True:
+    data = conn.recv(1024)
+    if not data:
+        break
+    decoded = data.decode('utf-8')
+    response = process_message(decoded)
+    conn.sendall(response.encode())
+
+conn.close()
+s.close()
